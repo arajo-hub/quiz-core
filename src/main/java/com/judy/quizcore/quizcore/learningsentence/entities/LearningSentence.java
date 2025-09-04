@@ -6,6 +6,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import lombok.Setter;
 
 /**
  * 학습문장 엔티티
@@ -14,6 +15,7 @@ import lombok.AllArgsConstructor;
  */
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class LearningSentence extends BaseEntity {
@@ -41,4 +43,14 @@ public class LearningSentence extends BaseEntity {
      */
     @Column(length = 500)
     private String translation;
+
+    /**
+     * ID만으로 LearningSentence를 생성합니다.
+     * 주로 JPA 관계 매핑에서 사용됩니다.
+     * 
+     * @param id 학습문장 ID
+     */
+    public LearningSentence(Long id) {
+        this.id = id;
+    }
 }

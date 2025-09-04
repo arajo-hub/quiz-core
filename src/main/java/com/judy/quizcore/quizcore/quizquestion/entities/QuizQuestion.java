@@ -2,6 +2,7 @@ package com.judy.quizcore.quizcore.quizquestion.entities;
 
 import com.judy.quizcore.quizcore.common.entities.BaseEntity;
 import com.judy.quizcore.quizcore.learninglog.entities.LearningLog;
+import com.judy.quizcore.quizcore.learningsentence.dto.LearningSentenceEntityDto;
 import com.judy.quizcore.quizcore.learningsentence.entities.LearningSentence;
 import com.judy.quizcore.quizcore.quizsession.entities.QuizSession;
 import jakarta.persistence.*;
@@ -29,6 +30,14 @@ public class QuizQuestion extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    /**
+     * 사용자 식별자
+     * 퀴즈 세션을 생성한 사용자를 구분합니다.
+     * 최대 100자까지 저장 가능합니다.
+     */
+    @Column(length = 100)
+    private Long userId;
     
     /**
      * 퀴즈 세션
@@ -67,19 +76,21 @@ public class QuizQuestion extends BaseEntity {
     private QuestionType questionType;
     
     /**
-     * 문제 내용
-     * 사용자에게 보여지는 실제 문제 텍스트입니다.
+     * 문제 내용 (JSON 형태)
+     * 문제 유형에 따라 다른 구조를 가집니다.
+     * COMPLETION: ["The", "", "results", "", "our", "", "by", "15%."]
      * 최대 1000자까지 저장 가능합니다.
      */
-    @Column(length = 1000)
-    private String questionText;
+    @Column(columnDefinition = "TEXT")
+    private String question;
     
     /**
-     * 정답
-     * 문제의 정답을 저장합니다.
+     * 정답 (JSON 형태)
+     * 문제 유형에 따라 다른 구조를 가집니다.
+     * COMPLETION: [{"index": 1, "answer": "quarterly"}, {"index": 3, "answer": "exceeded"}]
      * 최대 1000자까지 저장 가능합니다.
      */
-    @Column(length = 1000)
+    @Column(columnDefinition = "TEXT")
     private String correctAnswer;
     
     /**
@@ -98,4 +109,114 @@ public class QuizQuestion extends BaseEntity {
      */
     @OneToOne(mappedBy = "quizQuestion", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private LearningLog learningLog;
+
+    /**
+     * LearningSentenceEntityDto를 기반으로 빈칸 뚫기 문제를 생성합니다.
+     *
+     * @param userId 사용자 ID
+     * @param questionOrder 문제 순서
+     * @param learningSentenceEntityDto 학습 문장 DTO
+     * @return 생성된 퀴즈 문제
+     */
+    public static QuizQuestion of(Long userId, Long sessionId, Integer questionOrder, LearningSentenceEntityDto learningSentenceEntityDto) {
+        QuizQuestion quizQuestion = new QuizQuestion();
+        
+        // 기본 설정
+        quizQuestion.userId = userId;
+        quizQuestion.quizSession = new QuizSession(sessionId);
+        quizQuestion.questionOrder = questionOrder;
+        quizQuestion.questionType = QuestionType.COMPLETION;
+        quizQuestion.learningSentence = new LearningSentence(learningSentenceEntityDto.id());
+        
+        // 빈칸 뚫기 문제 생성
+        quizQuestion.question = createCompletionQuestion(learningSentenceEntityDto.sentence());
+        quizQuestion.correctAnswer = createCompletionAnswer(learningSentenceEntityDto.sentence());
+        quizQuestion.options = createCompletionOptions(learningSentenceEntityDto.sentence());
+        
+        return quizQuestion;
+    }
+    
+    /**
+     * 빈칸 뚫기 문제를 위한 JSON 형태의 문제를 생성합니다.
+     * 문장을 단어 단위로 분리하고 일부를 빈칸으로 만들어 배열로 저장합니다.
+     */
+    private static String createCompletionQuestion(String sentence) {
+        String[] words = sentence.split("\\s+");
+        if (words.length < 2) {
+            return String.format("[\"%s\"]", sentence);
+        }
+        
+        // 간단한 예시: 짝수 인덱스의 단어를 빈칸으로 만들기
+        StringBuilder questionBuilder = new StringBuilder("[");
+        for (int i = 0; i < words.length; i++) {
+            if (i > 0) questionBuilder.append(", ");
+            
+            if (i % 2 == 1 && i < words.length - 1) { // 짝수 인덱스(1, 3, 5...)를 빈칸으로
+                questionBuilder.append("\"\"");
+            } else {
+                questionBuilder.append("\"").append(words[i]).append("\"");
+            }
+        }
+        questionBuilder.append("]");
+        
+        return questionBuilder.toString();
+    }
+    
+    /**
+     * 빈칸 뚫기 문제를 위한 JSON 형태의 정답을 생성합니다.
+     * 빈칸의 인덱스와 정답을 객체 배열로 저장합니다.
+     */
+    private static String createCompletionAnswer(String sentence) {
+        String[] words = sentence.split("\\s+");
+        if (words.length < 2) {
+            return String.format("[{\"index\": 0, \"answer\": \"%s\"}]", sentence);
+        }
+        
+        // 빈칸이 있는 인덱스와 해당 정답을 찾기
+        StringBuilder answerBuilder = new StringBuilder("[");
+        boolean first = true;
+        
+        for (int i = 0; i < words.length; i++) {
+            if (i % 2 == 1 && i < words.length - 1) { // 빈칸이 있는 인덱스
+                if (!first) answerBuilder.append(", ");
+                answerBuilder.append(String.format("{\"index\": %d, \"answer\": \"%s\"}", i, words[i]));
+                first = false;
+            }
+        }
+        
+        answerBuilder.append("]");
+        return answerBuilder.toString();
+    }
+    
+    /**
+     * 빈칸 뚫기 문제를 위한 선택지를 생성합니다.
+     * 전체 문제에 대한 하나의 선택지 배열을 생성합니다.
+     * 
+     * @param sentence 원본 문장
+     * @return 선택지 JSON 문자열
+     */
+    private static String createCompletionOptions(String sentence) {
+        String[] words = sentence.split("\\s+");
+        if (words.length < 2) {
+            return "[]";
+        }
+        
+        // 빈칸에 들어갈 수 있는 모든 단어들을 수집
+        StringBuilder optionsBuilder = new StringBuilder("[");
+        boolean first = true;
+        
+        for (int i = 0; i < words.length; i++) {
+            if (i % 2 == 1 && i < words.length - 1) { // 짝수 인덱스(1, 3, 5...)가 빈칸
+                if (!first) optionsBuilder.append(", ");
+                
+                String correctAnswer = words[i];
+                optionsBuilder.append("\"").append(correctAnswer).append("\"");
+                
+                first = false;
+            }
+        }
+        
+        optionsBuilder.append("]");
+        return optionsBuilder.toString();
+    }
 }

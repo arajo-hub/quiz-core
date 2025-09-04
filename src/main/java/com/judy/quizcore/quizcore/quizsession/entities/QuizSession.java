@@ -88,6 +88,16 @@ public class QuizSession extends BaseEntity {
     @OneToMany(mappedBy = "quizSession", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<QuizQuestion> quizQuestions;
 
+    /**
+     * ID만으로 QuizSession 생성합니다.
+     * 주로 JPA 관계 매핑에서 사용됩니다.
+     *
+     * @param id 퀴즈세션 ID
+     */
+    public QuizSession(Long id) {
+        this.id = id;
+    }
+
     public static QuizSession of(Long userId) {
         QuizSession quizSession = new QuizSession();
         quizSession.userId = userId;

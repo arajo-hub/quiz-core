@@ -1,10 +1,10 @@
 package com.judy.quizcore.quizcore.quiz.controller;
 
 import com.judy.quizcore.quizcore.common.response.ApiResponse;
+import com.judy.quizcore.quizcore.quiz.response.QuizSessionStartResponse;
 import com.judy.quizcore.quizcore.quiz.service.QuizService;
-import com.judy.quizcore.quizcore.quizsession.dto.QuizSessionEntityDto;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -16,8 +16,8 @@ public class QuizController {
     /**
      * 퀴즈 시작
      */
-    @GetMapping("/quiz/start")
-    public ApiResponse<QuizSessionEntityDto> start() {
+    @PostMapping("/quiz/start")
+    public ApiResponse<QuizSessionStartResponse> start() {
         return quizService.startQuizSession(1L);
     }
 }

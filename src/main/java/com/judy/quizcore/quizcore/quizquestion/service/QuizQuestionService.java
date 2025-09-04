@@ -1,0 +1,57 @@
+package com.judy.quizcore.quizcore.quizquestion.service;
+
+import com.judy.quizcore.quizcore.learningsentence.dto.LearningSentenceEntityDto;
+import com.judy.quizcore.quizcore.learningsentence.service.LearningSentenceService;
+import com.judy.quizcore.quizcore.quizquestion.dto.QuizQuestionEntityDto;
+import com.judy.quizcore.quizcore.quizquestion.entities.QuizQuestion;
+import com.judy.quizcore.quizcore.quizquestion.repository.QuizQuestionJpaRepository;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+@Transactional
+@Service
+@RequiredArgsConstructor
+public class QuizQuestionService {
+
+    private final LearningSentenceService learningSentenceService;
+    private final QuizQuestionJpaRepository quizQuestionJpaRepository;
+
+    /**
+     * 새로운 퀴즈 문제를 생성합니다.
+     * 랜덤 학습문장을 가져와서 빈칸 뚫기 문제를 만듭니다.
+     * 
+     * @param userId 사용자 ID
+     * @param sessionId 퀴즈 세션 ID
+     * @return 생성된 퀴즈 문제 DTO
+     */
+    public QuizQuestionEntityDto createQuizQuestion(Long userId, Long sessionId) {
+        // 랜덤 학습문장 가져오기
+        LearningSentenceEntityDto learningSentenceEntityDto = learningSentenceService.findRandomLearningSentence();
+        
+        // sessionId로 기존 문제들의 questionOrder 조회하여 +1 계산
+        Integer nextQuestionOrder = calculateNextQuestionOrder(sessionId);
+        
+        // 퀴즈 문제 생성
+        QuizQuestion quizQuestion = QuizQuestion.of(userId, sessionId, nextQuestionOrder, learningSentenceEntityDto);
+        
+        // 데이터베이스에 저장
+        QuizQuestion savedQuizQuestion = quizQuestionJpaRepository.save(quizQuestion);
+        
+        // DTO로 변환하여 반환
+        return QuizQuestionEntityDto.from(savedQuizQuestion);
+    }
+    
+    /**
+     * 다음 문제 순서를 계산합니다.
+     * 
+     * @param sessionId 퀴즈 세션 ID
+     * @return 다음 문제 순서
+     */
+    private Integer calculateNextQuestionOrder(Long sessionId) {
+        // 해당 세션의 가장 큰 questionOrder를 찾아서 +1
+        Integer maxOrder = quizQuestionJpaRepository.findMaxQuestionOrderBySessionId(sessionId);
+        return maxOrder != null ? maxOrder + 1 : 1;
+    }
+
+}
