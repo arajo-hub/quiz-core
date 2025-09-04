@@ -1,4 +1,4 @@
-package com.judy.quizcore.quizcore.quizquestion.dto;
+package com.judy.quizcore.quizcore.quizsession.dto;
 
 import com.judy.quizcore.quizcore.quizsession.enums.SessionStatus;
 

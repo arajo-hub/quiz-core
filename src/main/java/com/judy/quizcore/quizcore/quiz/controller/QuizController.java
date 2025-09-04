@@ -2,7 +2,7 @@ package com.judy.quizcore.quizcore.quiz.controller;
 
 import com.judy.quizcore.quizcore.common.response.ApiResponse;
 import com.judy.quizcore.quizcore.quiz.service.QuizService;
-import com.judy.quizcore.quizcore.quizquestion.dto.QuizSessionEntityDto;
+import com.judy.quizcore.quizcore.quizsession.dto.QuizSessionEntityDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;

@@ -1,7 +1,7 @@
 package com.judy.quizcore.quizcore.quizsession.service;
 
-import com.judy.quizcore.quizcore.quizquestion.dto.QuizSessionEntityDto;
-import com.judy.quizcore.quizcore.quizquestion.repository.QuizSessionJpaRepository;
+import com.judy.quizcore.quizcore.quizsession.dto.QuizSessionEntityDto;
+import com.judy.quizcore.quizcore.quizsession.repository.QuizSessionJpaRepository;
 import com.judy.quizcore.quizcore.quizsession.entities.QuizSession;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;

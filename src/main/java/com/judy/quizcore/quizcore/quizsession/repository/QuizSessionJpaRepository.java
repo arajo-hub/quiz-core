@@ -1,4 +1,4 @@
-package com.judy.quizcore.quizcore.quizquestion.repository;
+package com.judy.quizcore.quizcore.quizsession.repository;
 
 import com.judy.quizcore.quizcore.quizsession.entities.QuizSession;
 import org.springframework.data.jpa.repository.JpaRepository;
