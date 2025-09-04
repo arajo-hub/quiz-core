@@ -46,7 +46,7 @@ public class QuizSession extends BaseEntity {
      * 최대 100자까지 저장 가능합니다.
      */
     @Column(length = 100)
-    private String userId;
+    private Long userId;
     
     /**
      * 세션 상태
@@ -58,19 +58,12 @@ public class QuizSession extends BaseEntity {
     private SessionStatus sessionStatus = SessionStatus.ACTIVE;
     
     /**
-     * 총 문제 수
-     * 해당 세션에서 출제되는 총 문제의 개수입니다.
-     */
-    @Column
-    private Integer totalQuestions;
-    
-    /**
      * 정답 개수
      * 사용자가 맞힌 문제의 개수입니다.
      * 기본값은 0입니다.
      */
     @Column
-    private Integer correctAnswers = 0;
+    private int correctAnswers = 0;
     
     /**
      * 세션 시작 시간
@@ -94,4 +87,12 @@ public class QuizSession extends BaseEntity {
      */
     @OneToMany(mappedBy = "quizSession", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<QuizQuestion> quizQuestions;
+
+    public static QuizSession of(Long userId) {
+        QuizSession quizSession = new QuizSession();
+        quizSession.userId = userId;
+        quizSession.sessionName = "오늘의 문장";
+        quizSession.startedDateTime = LocalDateTime.now();
+        return quizSession;
+    }
 }
