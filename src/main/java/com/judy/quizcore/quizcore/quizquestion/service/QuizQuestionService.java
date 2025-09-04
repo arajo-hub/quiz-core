@@ -222,4 +222,12 @@ public class QuizQuestionService {
 
         return true;
     }
+
+    public List<QuizQuestionEntityDto> findQuestionsBySessionIdExcludingCurrent(Long sessionId, Long currentQuestionId) {
+        List<QuizQuestion> questions = quizQuestionJpaRepository.findByQuizSessionIdOrderByQuestionOrder(sessionId);
+        questions.removeIf(question -> question.getId().equals(currentQuestionId));
+        return questions.stream()
+                .map(QuizQuestionEntityDto::from)
+                .collect(Collectors.toList());
+    }
 }

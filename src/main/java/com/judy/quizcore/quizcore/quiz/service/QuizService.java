@@ -115,8 +115,8 @@ public class QuizService {
             // REVIEW: 모든 문제를 맞춰야 완료
             if (isCorrect) {
                 // 현재 문제를 맞췄다면, 모든 문제가 맞춰졌는지 확인
-                List<QuizQuestionEntityDto> questions = quizQuestionService.findQuestionsBySessionId(quizQuestionDto.quizSessionId());
-                boolean allCorrect = true;
+                List<QuizQuestionEntityDto> questions = quizQuestionService.findQuestionsBySessionIdExcludingCurrent(quizQuestionDto.quizSessionId(), quizQuestionDto.id());
+                boolean allCorrect = questions.size() == 2;
                 
                 for (QuizQuestionEntityDto question : questions) {
                     if (question.isSolved()) {
