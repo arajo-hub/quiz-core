@@ -18,6 +18,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.Optional;
 
 @Transactional
 @Service
@@ -29,19 +30,44 @@ public class QuizService {
     private final LearningLogService learningLogService;
 
     public ApiResponse<QuizSessionStartResponse> startQuizSession(Long userId) {
-        // 퀴즈 세션 시작
-        QuizSessionEntityDto quizSessionEntityDto = quizSessionService.startQuizSession(userId);
+        // 진행 중인 세션 확인
+        Optional<QuizSessionEntityDto> ongoingSession = quizSessionService.findOngoingSessionByUserIdAndSessionType(userId, SessionType.TODAY_SENTENCE);
+        if (ongoingSession.isPresent()) {
+            QuizSessionEntityDto session = ongoingSession.get();
+            List<QuizQuestionEntityDto> questions = quizQuestionService.findQuestionsBySessionId(session.id());
+            QuizQuestionEntityDto nextQuestion = quizQuestionService.findNextUnsolvedQuestion(questions);
+            if (nextQuestion == null) {
+                // 모든 문제가 정답일 경우 세션 닫기
+                quizSessionService.completeQuizSession(session.id());
+                throw new BusinessException(ErrorCode.QUIZ_SESSION_ALREADY_COMPLETED);
+            }
+            return ApiResponse.success(new QuizSessionStartResponse(session.id(), nextQuestion));
+        }
 
-        // 퀴즈 문제 생성 (sessionId로 자동으로 questionOrder 계산)
-        QuizQuestionEntityDto quizQuestionEntityDto = quizQuestionService.createQuizQuestion(userId, quizSessionEntityDto.id());
-
-        return ApiResponse.success(new QuizSessionStartResponse(quizSessionEntityDto.id(), quizQuestionEntityDto));
+        // 새로운 세션 시작
+        QuizSessionEntityDto newSession = quizSessionService.startQuizSession(userId);
+        QuizQuestionEntityDto firstQuestion = quizQuestionService.createQuizQuestion(userId, newSession.id());
+        return ApiResponse.success(new QuizSessionStartResponse(newSession.id(), firstQuestion));
     }
     
     /**
      * 복습 퀴즈 세션을 시작합니다.
      */
     public ApiResponse<QuizSessionStartResponse> startReviewSession(Long userId) {
+        // 진행 중인 세션 확인
+        Optional<QuizSessionEntityDto> ongoingSession = quizSessionService.findOngoingSessionByUserIdAndSessionType(userId, SessionType.REVIEW);
+        if (ongoingSession.isPresent()) {
+            QuizSessionEntityDto session = ongoingSession.get();
+            List<QuizQuestionEntityDto> questions = quizQuestionService.findQuestionsBySessionId(session.id());
+            QuizQuestionEntityDto nextQuestion = quizQuestionService.findNextUnsolvedQuestion(questions);
+            if (nextQuestion == null) {
+                // 모든 문제가 정답일 경우 세션 닫기
+                quizSessionService.completeQuizSession(session.id());
+                throw new BusinessException(ErrorCode.QUIZ_SESSION_ALREADY_COMPLETED);
+            }
+            return ApiResponse.success(new QuizSessionStartResponse(session.id(), nextQuestion));
+        }
+
         // 복습 퀴즈 세션 시작
         QuizSessionEntityDto quizSessionEntityDto = quizSessionService.startReviewSession(userId);
 

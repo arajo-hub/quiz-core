@@ -63,7 +63,7 @@ public class QuizSession extends BaseEntity {
      * 기본값은 0입니다.
      */
     @Column
-    private int correctAnswers = 0;
+    private int correctAnswer = 0;
     
     /**
      * 세션 시작 시간

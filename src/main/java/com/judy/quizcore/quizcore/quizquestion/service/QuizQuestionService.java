@@ -230,4 +230,13 @@ public class QuizQuestionService {
                 .map(QuizQuestionEntityDto::from)
                 .collect(Collectors.toList());
     }
+
+    public QuizQuestionEntityDto findNextUnsolvedQuestion(List<QuizQuestionEntityDto> questions) {
+        for (QuizQuestionEntityDto question : questions) {
+            if (!question.isSolved()) {
+                return question;
+            }
+        }
+        return null;
+    }
 }

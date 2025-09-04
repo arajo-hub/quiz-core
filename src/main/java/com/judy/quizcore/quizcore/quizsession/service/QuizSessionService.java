@@ -6,9 +6,12 @@ import com.judy.quizcore.quizcore.quizsession.dto.QuizSessionEntityDto;
 import com.judy.quizcore.quizcore.quizsession.enums.SessionType;
 import com.judy.quizcore.quizcore.quizsession.repository.QuizSessionJpaRepository;
 import com.judy.quizcore.quizcore.quizsession.entities.QuizSession;
+import com.judy.quizcore.quizcore.quizsession.enums.SessionStatus;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Transactional
 @Service
@@ -25,7 +28,7 @@ public class QuizSessionService {
                 quizSession.getSessionType(),
                 quizSession.getUserId(),
                 quizSession.getSessionStatus(),
-                quizSession.getCorrectAnswers(),
+                quizSession.getCorrectAnswer(),
                 quizSession.getStartedDateTime(),
                 quizSession.getCompletedDateTime()
         );
@@ -42,7 +45,7 @@ public class QuizSessionService {
                 quizSession.getSessionType(),
                 quizSession.getUserId(),
                 quizSession.getSessionStatus(),
-                quizSession.getCorrectAnswers(),
+                quizSession.getCorrectAnswer(),
                 quizSession.getStartedDateTime(),
                 quizSession.getCompletedDateTime()
         );
@@ -69,9 +72,14 @@ public class QuizSessionService {
                 quizSession.getSessionType(),
                 quizSession.getUserId(),
                 quizSession.getSessionStatus(),
-                quizSession.getCorrectAnswers(),
+                quizSession.getCorrectAnswer(),
                 quizSession.getStartedDateTime(),
                 quizSession.getCompletedDateTime()
         );
+    }
+
+    public Optional<QuizSessionEntityDto> findOngoingSessionByUserIdAndSessionType(Long userId, SessionType sessionType) {
+        return quizSessionJpaRepository.findByUserIdAndSessionStatusAndSessionType(userId, SessionStatus.ACTIVE, sessionType)
+                .map(QuizSessionEntityDto::from);
     }
 }
