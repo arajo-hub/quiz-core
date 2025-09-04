@@ -2,6 +2,7 @@ package com.judy.quizcore.quizcore.quizquestion.service;
 
 import com.judy.quizcore.quizcore.common.enums.ErrorCode;
 import com.judy.quizcore.quizcore.common.exception.BusinessException;
+import com.judy.quizcore.quizcore.learninglog.service.LearningLogService;
 import com.judy.quizcore.quizcore.learningsentence.dto.LearningSentenceEntityDto;
 import com.judy.quizcore.quizcore.learningsentence.service.LearningSentenceService;
 import com.judy.quizcore.quizcore.quizquestion.dto.QuizQuestionEntityDto;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 public class QuizQuestionService {
 
     private final LearningSentenceService learningSentenceService;
+    private final LearningLogService learningLogService;
     private final QuizQuestionJpaRepository quizQuestionJpaRepository;
 
     /**
@@ -107,5 +109,117 @@ public class QuizQuestionService {
         return questions.stream()
                 .map(QuizQuestionEntityDto::from)
                 .collect(Collectors.toList());
+    }
+    
+    /**
+     * 특정 세션에서 틀린 문제 중 하나를 찾습니다.
+     * REVIEW 타입 세션에서 틀린 문제를 재시도할 때 사용합니다.
+     */
+    public QuizQuestionEntityDto findNextWrongQuestion(Long sessionId) {
+        List<QuizQuestion> questions = quizQuestionJpaRepository.findByQuizSessionIdOrderByQuestionOrder(sessionId);
+        
+        for (QuizQuestion question : questions) {
+            if (question.isSolved()) {
+                // LearningLogService를 통해 정답 여부 확인
+                Boolean isCorrect = learningLogService.getCorrectnessByQuizQuestionId(question.getId());
+                if (!isCorrect) {
+                    // 틀린 문제를 찾았으면 DTO로 변환하여 반환
+                    return QuizQuestionEntityDto.from(question);
+                }
+            }
+        }
+        
+        // 모든 문제를 맞췄다면 null 반환 (세션 완료)
+        return null;
+    }
+
+    public QuizQuestionEntityDto findFirstWrongQuestion(Long sessionId) {
+        List<QuizQuestion> questions = quizQuestionJpaRepository.findByQuizSessionIdOrderByQuestionOrder(sessionId);
+
+        for (QuizQuestion question : questions) {
+            if (question.isSolved()) {
+                Boolean isCorrect = learningLogService.getCorrectnessByQuizQuestionId(question.getId());
+                if (!isCorrect) {
+                    return QuizQuestionEntityDto.from(question);
+                }
+            }
+        }
+        return null;
+    }
+
+    public Integer findMaxQuestionOrderBySessionId(Long sessionId) {
+        return quizQuestionJpaRepository.findMaxQuestionOrderBySessionId(sessionId);
+    }
+
+    public QuizQuestionEntityDto findNextQuestion(Long sessionId, Integer currentOrder) {
+        List<QuizQuestion> questions = quizQuestionJpaRepository.findByQuizSessionIdOrderByQuestionOrder(sessionId);
+
+        for (QuizQuestion question : questions) {
+            if (question.getQuestionOrder() > currentOrder) {
+                return QuizQuestionEntityDto.from(question);
+            }
+        }
+        return null;
+    }
+
+    public QuizQuestionEntityDto findNextQuestionInDb(Long sessionId, Integer currentOrder) {
+        List<QuizQuestion> questions = quizQuestionJpaRepository.findByQuizSessionIdOrderByQuestionOrder(sessionId);
+
+        for (QuizQuestion question : questions) {
+            if (question.getQuestionOrder() == currentOrder) {
+                return QuizQuestionEntityDto.from(question);
+            }
+        }
+        return null;
+    }
+
+    public QuizQuestionEntityDto findNextCircularWrongQuestion(Long sessionId, Integer currentOrder) {
+        List<QuizQuestion> questions = quizQuestionJpaRepository.findByQuizSessionIdOrderByQuestionOrder(sessionId);
+        questions.removeIf(question -> question.getQuestionOrder().equals(currentOrder));
+        QuizQuestionEntityDto smallestWrongQuestion = null;
+
+        for (QuizQuestion question : questions) {
+            if (!learningLogService.getCorrectnessByQuizQuestionId(question.getId())) {
+                if (smallestWrongQuestion == null || question.getId() < smallestWrongQuestion.id()) {
+                    smallestWrongQuestion = QuizQuestionEntityDto.from(question);
+                }
+            }
+        }
+
+        // If no wrong question is found, repeat the current question
+        return smallestWrongQuestion != null ? smallestWrongQuestion : QuizQuestionEntityDto.from(questions.get(currentOrder - 1));
+    }
+
+    public QuizQuestionEntityDto findNextWrongQuestionAfterCurrent(Long sessionId, Integer currentOrder) {
+        List<QuizQuestion> questions = quizQuestionJpaRepository.findByQuizSessionIdOrderByQuestionOrder(sessionId);
+        boolean foundCurrent = false;
+
+        for (QuizQuestion question : questions) {
+            if (foundCurrent && !learningLogService.getCorrectnessByQuizQuestionId(question.getId())) {
+                return QuizQuestionEntityDto.from(question);
+            }
+            if (question.getQuestionOrder().equals(currentOrder)) {
+                foundCurrent = true;
+            }
+        }
+
+        return null;
+    }
+
+    public boolean allSubsequentQuestionsCorrect(Long sessionId, Integer currentOrder) {
+        List<QuizQuestion> questions = quizQuestionJpaRepository.findByQuizSessionIdOrderByQuestionOrder(sessionId);
+        questions.removeIf(question -> question.getQuestionOrder().equals(currentOrder));
+
+        if (questions.isEmpty()) {
+            return false;
+        }
+
+        for (QuizQuestion question : questions) {
+            if (!learningLogService.getCorrectnessByQuizQuestionId(question.getId())) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

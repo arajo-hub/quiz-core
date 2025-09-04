@@ -1,5 +1,6 @@
 package com.judy.quizcore.quizcore.quiz.response;
 
+import com.judy.quizcore.quizcore.quizsession.enums.SessionType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -21,9 +22,9 @@ public class QuizSessionResultResponse {
     private Long sessionId;
     
     /**
-     * 세션 이름
+     * 세션 타입
      */
-    private String sessionName;
+    private SessionType sessionType;
     
     /**
      * 총 문제 수

@@ -12,6 +12,8 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import com.judy.quizcore.quizcore.quizquestion.enums.QuestionType;
 
+import java.util.List;
+
 /**
  * 퀴즈 문제 엔티티
  * 퀴즈 세션에서 출제되는 개별 문제를 관리합니다.
@@ -114,8 +116,8 @@ public class QuizQuestion extends BaseEntity {
      * 이 문제에 대한 사용자의 답변 기록입니다.
      * 일대일 관계로 연결됩니다.
      */
-    @OneToOne(mappedBy = "quizQuestion", cascade = CascadeType.ALL)
-    private LearningLog learningLog;
+    @OneToMany(mappedBy = "quizQuestion", cascade = CascadeType.ALL)
+    private List<LearningLog> learningLogs;
 
     /**
      * ID만으로 QuizQuestion 생성합니다.
@@ -243,5 +245,9 @@ public class QuizQuestion extends BaseEntity {
      */
     public void markAsSolved() {
         this.isSolved = true;
+    }
+
+    public boolean isSolved() {
+        return isSolved;
     }
 }

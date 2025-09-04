@@ -39,7 +39,7 @@ public class LearningLog extends BaseEntity {
      * 이 로그가 기록된 퀴즈 문제입니다.
      * 다대일 관계로 연결됩니다.
      */
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false)
     private QuizQuestion quizQuestion;
     

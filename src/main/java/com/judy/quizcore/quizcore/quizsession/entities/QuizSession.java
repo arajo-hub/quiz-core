@@ -3,6 +3,7 @@ package com.judy.quizcore.quizcore.quizsession.entities;
 import com.judy.quizcore.quizcore.common.entities.BaseEntity;
 import com.judy.quizcore.quizcore.quizquestion.entities.QuizQuestion;
 import com.judy.quizcore.quizcore.quizsession.enums.SessionStatus;
+import com.judy.quizcore.quizcore.quizsession.enums.SessionType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -32,13 +33,12 @@ public class QuizSession extends BaseEntity {
     private Long id;
     
     /**
-     * 퀴즈 세션 이름
-     * 사용자가 세션을 구분하기 위한 이름입니다.
-     * 예: "오늘의 퀴즈", "주말 복습" 등
-     * 최대 200자까지 저장 가능합니다.
+     * 퀴즈 세션 타입
+     * 세션의 목적과 동작 방식을 정의합니다.
      */
-    @Column(length = 200)
-    private String sessionName;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private SessionType sessionType;
     
     /**
      * 사용자 식별자
@@ -101,7 +101,18 @@ public class QuizSession extends BaseEntity {
     public static QuizSession of(Long userId) {
         QuizSession quizSession = new QuizSession();
         quizSession.userId = userId;
-        quizSession.sessionName = "오늘의 문장";
+        quizSession.sessionType = SessionType.TODAY_SENTENCE;
+        quizSession.startedDateTime = LocalDateTime.now();
+        return quizSession;
+    }
+    
+    /**
+     * 특정 타입으로 퀴즈 세션을 생성합니다.
+     */
+    public static QuizSession of(Long userId, SessionType sessionType) {
+        QuizSession quizSession = new QuizSession();
+        quizSession.userId = userId;
+        quizSession.sessionType = sessionType;
         quizSession.startedDateTime = LocalDateTime.now();
         return quizSession;
     }

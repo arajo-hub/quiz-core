@@ -3,6 +3,7 @@ package com.judy.quizcore.quizcore.quizsession.service;
 import com.judy.quizcore.quizcore.common.enums.ErrorCode;
 import com.judy.quizcore.quizcore.common.exception.BusinessException;
 import com.judy.quizcore.quizcore.quizsession.dto.QuizSessionEntityDto;
+import com.judy.quizcore.quizcore.quizsession.enums.SessionType;
 import com.judy.quizcore.quizcore.quizsession.repository.QuizSessionJpaRepository;
 import com.judy.quizcore.quizcore.quizsession.entities.QuizSession;
 import jakarta.transaction.Transactional;
@@ -21,7 +22,24 @@ public class QuizSessionService {
         quizSessionJpaRepository.save(quizSession);
         return new QuizSessionEntityDto(
                 quizSession.getId(),
-                quizSession.getSessionName(),
+                quizSession.getSessionType(),
+                quizSession.getUserId(),
+                quizSession.getSessionStatus(),
+                quizSession.getCorrectAnswers(),
+                quizSession.getStartedDateTime(),
+                quizSession.getCompletedDateTime()
+        );
+    }
+    
+    /**
+     * 복습 퀴즈 세션을 시작합니다.
+     */
+    public QuizSessionEntityDto startReviewSession(Long userId) {
+        QuizSession quizSession = QuizSession.of(userId, SessionType.REVIEW);
+        quizSessionJpaRepository.save(quizSession);
+        return new QuizSessionEntityDto(
+                quizSession.getId(),
+                quizSession.getSessionType(),
                 quizSession.getUserId(),
                 quizSession.getSessionStatus(),
                 quizSession.getCorrectAnswers(),
@@ -48,7 +66,7 @@ public class QuizSessionService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.QUIZ_SESSION_NOT_FOUND));
         return new QuizSessionEntityDto(
                 quizSession.getId(),
-                quizSession.getSessionName(),
+                quizSession.getSessionType(),
                 quizSession.getUserId(),
                 quizSession.getSessionStatus(),
                 quizSession.getCorrectAnswers(),

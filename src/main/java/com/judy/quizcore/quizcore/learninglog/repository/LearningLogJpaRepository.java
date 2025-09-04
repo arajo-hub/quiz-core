@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -17,6 +18,6 @@ public interface LearningLogJpaRepository extends JpaRepository<LearningLog, Lon
      * @param quizQuestionId 퀴즈 문제 ID
      * @return 학습 로그 (Optional)
      */
-    @Query("SELECT l FROM LearningLog l WHERE l.quizQuestion.id = :quizQuestionId")
-    Optional<LearningLog> findByQuizQuestionId(@Param("quizQuestionId") Long quizQuestionId);
+    @Query("SELECT l FROM LearningLog l WHERE l.quizQuestion.id = :quizQuestionId ORDER BY l.createdDate DESC")
+    List<LearningLog> findByQuizQuestionId(@Param("quizQuestionId") Long quizQuestionId);
 }

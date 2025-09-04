@@ -16,11 +16,19 @@ public class QuizController {
     private final QuizService quizService;
 
     /**
-     * 퀴즈 시작
+     * 오늘의 문장 퀴즈 시작
      */
     @PostMapping("/quiz/start")
     public ApiResponse<QuizSessionStartResponse> start() {
         return quizService.startQuizSession(1L);
+    }
+    
+    /**
+     * 복습 퀴즈 시작
+     */
+    @PostMapping("/quiz/review/start")
+    public ApiResponse<QuizSessionStartResponse> startReview() {
+        return quizService.startReviewSession(1L);
     }
     
     /**

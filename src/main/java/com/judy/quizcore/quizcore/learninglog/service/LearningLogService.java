@@ -13,6 +13,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 /**
  * 학습 로그 서비스
  * 사용자의 학습 기록을 관리합니다.
@@ -53,19 +55,10 @@ public class LearningLogService {
     }
     
     /**
-     * 퀴즈 문제 ID로 학습 로그를 조회합니다.
-     */
-    public LearningLog findByQuizQuestionId(Long quizQuestionId) {
-        return learningLogJpaRepository.findByQuizQuestionId(quizQuestionId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.LEARNING_PROGRESS_NOT_FOUND));
-    }
-    
-    /**
      * 퀴즈 문제 ID로 정답 여부를 조회합니다.
      */
     public Boolean getCorrectnessByQuizQuestionId(Long quizQuestionId) {
-        return learningLogJpaRepository.findByQuizQuestionId(quizQuestionId)
-                .map(LearningLog::getIsCorrect)
-                .orElse(false);
+        List<LearningLog> logs = learningLogJpaRepository.findByQuizQuestionId(quizQuestionId);
+        return logs.stream().findFirst().map(LearningLog::getIsCorrect).orElse(false);
     }
 }
