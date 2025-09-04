@@ -103,6 +103,13 @@ public class QuizQuestion extends BaseEntity {
     private String options;
     
     /**
+     * 문제 해결 여부
+     * 사용자가 이 문제를 풀었는지 여부를 나타냅니다.
+     */
+    @Column(nullable = false)
+    private Boolean isSolved = false;
+    
+    /**
      * 학습 로그
      * 이 문제에 대한 사용자의 답변 기록입니다.
      * 일대일 관계로 연결됩니다.
@@ -142,6 +149,7 @@ public class QuizQuestion extends BaseEntity {
         quizQuestion.question = createCompletionQuestion(learningSentenceEntityDto.sentence());
         quizQuestion.correctAnswer = createCompletionAnswer(learningSentenceEntityDto.sentence());
         quizQuestion.options = createCompletionOptions(learningSentenceEntityDto.sentence());
+        quizQuestion.isSolved = false;
         
         return quizQuestion;
     }
@@ -228,5 +236,12 @@ public class QuizQuestion extends BaseEntity {
         
         optionsBuilder.append("]");
         return optionsBuilder.toString();
+    }
+    
+    /**
+     * 문제를 해결된 상태로 표시합니다.
+     */
+    public void markAsSolved() {
+        this.isSolved = true;
     }
 }

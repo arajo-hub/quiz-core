@@ -41,7 +41,7 @@ public class LearningLogService {
             LearningLog learningLog = LearningLog.of(
                 userId, 
                 quizQuestionDto.id(), 
-                response.getIsCorrect(), 
+                response.getGradingResult().getIsCorrect(), 
                 userAnswerJson, 
                 request.getTimeSpent()
             );

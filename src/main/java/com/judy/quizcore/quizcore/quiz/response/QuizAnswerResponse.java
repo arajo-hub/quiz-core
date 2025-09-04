@@ -1,10 +1,9 @@
 package com.judy.quizcore.quizcore.quiz.response;
 
+import com.judy.quizcore.quizcore.quizquestion.dto.QuizQuestionEntityDto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
-
-import java.util.List;
 
 /**
  * 퀴즈 답변 채점 결과 응답 DTO
@@ -16,12 +15,23 @@ import java.util.List;
 public class QuizAnswerResponse {
     
     /**
-     * 전체 문장
+     * 채점 결과
      */
-    private String sentence;
+    private GradingResult gradingResult;
     
     /**
-     * 정답 여부
+     * 다음 문제
      */
-    private Boolean isCorrect;
+    private QuizQuestionEntityDto nextQuestion;
+    
+    /**
+     * 채점 결과
+     */
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class GradingResult {
+        private String sentence;
+        private Boolean isCorrect;
+    }
 }

@@ -21,7 +21,8 @@ public record QuizQuestionEntityDto(
     QuestionType questionType,
     Object question,
     Object correctAnswer,
-    Object options
+    Object options,
+    Boolean isSolved
 ) {
     
     /**
@@ -64,7 +65,8 @@ public record QuizQuestionEntityDto(
                 quizQuestion.getQuestionType(),
                 questionObject,
                 correctAnswerObject,
-                optionsObject
+                optionsObject,
+                quizQuestion.getIsSolved()
         );
     }
 }

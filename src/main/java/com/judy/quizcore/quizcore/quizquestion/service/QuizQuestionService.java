@@ -1,5 +1,7 @@
 package com.judy.quizcore.quizcore.quizquestion.service;
 
+import com.judy.quizcore.quizcore.common.enums.ErrorCode;
+import com.judy.quizcore.quizcore.common.exception.BusinessException;
 import com.judy.quizcore.quizcore.learningsentence.dto.LearningSentenceEntityDto;
 import com.judy.quizcore.quizcore.learningsentence.service.LearningSentenceService;
 import com.judy.quizcore.quizcore.quizquestion.dto.QuizQuestionEntityDto;
@@ -62,7 +64,7 @@ public class QuizQuestionService {
      */
     public QuizQuestionEntityDto findQuizQuestionById(Long questionId) {
         QuizQuestion quizQuestion = quizQuestionJpaRepository.findById(questionId)
-                .orElseThrow(() -> new RuntimeException("퀴즈 문제를 찾을 수 없습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.QUIZ_QUESTION_NOT_FOUND));
         return QuizQuestionEntityDto.from(quizQuestion);
     }
     
@@ -74,6 +76,16 @@ public class QuizQuestionService {
      */
     public QuizQuestion findQuizQuestionForGrading(Long questionId) {
         return quizQuestionJpaRepository.findById(questionId)
-                .orElseThrow(() -> new RuntimeException("퀴즈 문제를 찾을 수 없습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.QUIZ_QUESTION_NOT_FOUND));
+    }
+    
+    /**
+     * 퀴즈 문제를 해결된 상태로 표시합니다.
+     */
+    @Transactional
+    public void markQuizQuestionAsSolved(Long questionId) {
+        QuizQuestion quizQuestion = quizQuestionJpaRepository.findById(questionId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.QUIZ_QUESTION_NOT_FOUND));
+        quizQuestion.markAsSolved();
     }
 }

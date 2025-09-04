@@ -51,9 +51,10 @@ public enum ErrorCode {
     // 4000번대: 퀴즈 문제 관련 에러 코드
     QUIZ_QUESTION_NOT_FOUND(4000, "퀴즈 문제를 찾을 수 없습니다."),
     QUIZ_QUESTION_ALREADY_ANSWERED(4001, "이미 답변한 문제입니다."),
-    QUIZ_QUESTION_INVALID_TYPE(4002, "잘못된 문제 유형입니다."),
-    QUIZ_QUESTION_OPTIONS_INVALID(4003, "문제 보기가 잘못되었습니다."),
-    QUIZ_QUESTION_ORDER_INVALID(4004, "잘못된 문제 순서입니다."),
+    QUIZ_QUESTION_ALREADY_SOLVED(4002, "이미 푼 문제입니다."),
+    QUIZ_QUESTION_INVALID_TYPE(4003, "잘못된 문제 유형입니다."),
+    QUIZ_QUESTION_OPTIONS_INVALID(4004, "문제 보기가 잘못되었습니다."),
+    QUIZ_QUESTION_ORDER_INVALID(4005, "잘못된 문제 순서입니다."),
     
     // 5000번대: 사용자 관련 에러 코드
     USER_NOT_FOUND(5000, "사용자를 찾을 수 없습니다."),

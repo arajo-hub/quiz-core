@@ -1,8 +1,8 @@
 package com.judy.quizcore.quizcore.quiz.service;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.judy.quizcore.quizcore.common.enums.ErrorCode;
+import com.judy.quizcore.quizcore.common.exception.BusinessException;
 import com.judy.quizcore.quizcore.common.response.ApiResponse;
 import com.judy.quizcore.quizcore.learninglog.service.LearningLogService;
 import com.judy.quizcore.quizcore.quiz.dto.QuizAnswerRequest;
@@ -15,8 +15,6 @@ import com.judy.quizcore.quizcore.quizsession.service.QuizSessionService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.io.IOException;
 import java.util.List;
 
 @Transactional
@@ -27,7 +25,6 @@ public class QuizService {
     private final QuizSessionService quizSessionService;
     private final QuizQuestionService quizQuestionService;
     private final LearningLogService learningLogService;
-    private final ObjectMapper objectMapper;
 
     public ApiResponse<QuizSessionStartResponse> startQuizSession(Long userId) {
         // 퀴즈 세션 시작
@@ -50,14 +47,27 @@ public class QuizService {
         // 퀴즈 문제 조회
         QuizQuestionEntityDto quizQuestionDto = quizQuestionService.findQuizQuestionById(request.getQuestionId());
         
+        // 이미 푼 문제인지 확인
+        if (quizQuestionDto.isSolved()) {
+            throw new BusinessException(ErrorCode.QUIZ_QUESTION_ALREADY_SOLVED);
+        }
+        
         // 전체 정답 여부 확인
         boolean isCorrect = checkAllAnswersCorrect(quizQuestionDto, request.getAnswers());
         
+        // 현재 문제를 해결된 상태로 표시
+        quizQuestionService.markQuizQuestionAsSolved(request.getQuestionId());
+        
+        // 다음 문제 생성
+        QuizQuestionEntityDto nextQuestion = quizQuestionService.createQuizQuestion(userId, quizQuestionDto.quizSessionId());
+        
         // 채점 결과 생성
-        QuizAnswerResponse response = new QuizAnswerResponse(
+        QuizAnswerResponse.GradingResult gradingResult = new QuizAnswerResponse.GradingResult(
             quizQuestionDto.learningSentence().sentence(), 
             isCorrect
         );
+        
+        QuizAnswerResponse response = new QuizAnswerResponse(gradingResult, nextQuestion);
         
         // LearningLog 저장
         learningLogService.saveLearningLog(userId, quizQuestionDto, request, response);
@@ -77,7 +87,7 @@ public class QuizService {
             // correctAnswer가 이미 Object로 파싱되어 있으므로 직접 캐스팅
             Object correctAnswerObj = quizQuestionDto.correctAnswer();
             if (!(correctAnswerObj instanceof List)) {
-                throw new RuntimeException("정답 형식이 올바르지 않습니다.");
+                throw new BusinessException(ErrorCode.INVALID_ANSWER_FORMAT);
             }
             
             List<Object> correctAnswers = (List<Object>) correctAnswerObj;
@@ -109,7 +119,7 @@ public class QuizService {
             
             return true; // 모든 답변이 정답
         } catch (Exception e) {
-            throw new RuntimeException("정답 처리 중 오류가 발생했습니다.", e);
+            throw new BusinessException(ErrorCode.UNPROCESSABLE_ENTITY);
         }
     }
 }
