@@ -26,9 +26,9 @@ public class QuizController {
     /**
      * 퀴즈 답변 채점
      */
-    @PostMapping("/quiz/grade")
-    public ApiResponse<QuizAnswerResponse> grade(@RequestBody QuizAnswerRequest request) {
-        return quizService.gradeQuizAnswer(1L, request);
+    @PostMapping("/quiz/session/{sessionId}/grade")
+    public ApiResponse<QuizAnswerResponse> grade(@PathVariable Long sessionId, @RequestBody QuizAnswerRequest request) {
+        return quizService.gradeQuizAnswer(1L, sessionId, request);
     }
     
     /**

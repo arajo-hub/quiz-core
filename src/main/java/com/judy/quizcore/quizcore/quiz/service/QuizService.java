@@ -1,6 +1,5 @@
 package com.judy.quizcore.quizcore.quiz.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.judy.quizcore.quizcore.common.enums.ErrorCode;
 import com.judy.quizcore.quizcore.common.exception.BusinessException;
 import com.judy.quizcore.quizcore.common.response.ApiResponse;
@@ -13,6 +12,7 @@ import com.judy.quizcore.quizcore.quizquestion.dto.QuizQuestionEntityDto;
 import com.judy.quizcore.quizcore.quizquestion.service.QuizQuestionService;
 import com.judy.quizcore.quizcore.quizsession.dto.QuizSessionEntityDto;
 import com.judy.quizcore.quizcore.quizsession.service.QuizSessionService;
+import com.judy.quizcore.quizcore.quizsession.enums.SessionStatus;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -41,14 +41,26 @@ public class QuizService {
      * 퀴즈 답변을 채점하고 결과를 저장합니다.
      * 
      * @param userId 사용자 ID
+     * @param sessionId 세션 ID
      * @param request 답변 요청
      * @return 채점 결과
      */
-    public ApiResponse<QuizAnswerResponse> gradeQuizAnswer(Long userId, QuizAnswerRequest request) {
-        // 퀴즈 문제 조회
+    public ApiResponse<QuizAnswerResponse> gradeQuizAnswer(Long userId, Long sessionId, QuizAnswerRequest request) {
+        // 1. 세션이 진행 중인지 확인
+        QuizSessionEntityDto session = quizSessionService.findSessionById(sessionId);
+        if (session.sessionStatus() != SessionStatus.ACTIVE) {
+            throw new BusinessException(ErrorCode.QUIZ_SESSION_INVALID_STATUS);
+        }
+        
+        // 2. 퀴즈 문제 조회
         QuizQuestionEntityDto quizQuestionDto = quizQuestionService.findQuizQuestionById(request.getQuestionId());
         
-        // 이미 푼 문제인지 확인
+        // 3. 세션과 문제의 정합성 확인
+        if (!quizQuestionDto.quizSessionId().equals(sessionId)) {
+            throw new BusinessException(ErrorCode.QUIZ_QUESTION_SESSION_MISMATCH);
+        }
+        
+        // 4. 이미 푼 문제인지 확인
         if (quizQuestionDto.isSolved()) {
             throw new BusinessException(ErrorCode.QUIZ_QUESTION_ALREADY_SOLVED);
         }
