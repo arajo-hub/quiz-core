@@ -25,6 +25,11 @@ public class QuizAnswerResponse {
     private QuizQuestionEntityDto nextQuestion;
     
     /**
+     * 퀴즈 세션 완료 여부
+     */
+    private Boolean isSessionCompleted;
+    
+    /**
      * 채점 결과
      */
     @Getter

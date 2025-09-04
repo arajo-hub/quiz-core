@@ -17,4 +17,13 @@ public interface QuizQuestionJpaRepository extends JpaRepository<QuizQuestion, L
      */
     @Query("SELECT MAX(q.questionOrder) FROM QuizQuestion q WHERE q.quizSession.id = :sessionId")
     Integer findMaxQuestionOrderBySessionId(@Param("sessionId") Long sessionId);
+    
+    /**
+     * 특정 세션의 문제 수를 카운트합니다.
+     * 
+     * @param sessionId 퀴즈 세션 ID
+     * @return 문제 수
+     */
+    @Query("SELECT COUNT(q) FROM QuizQuestion q WHERE q.quizSession.id = :sessionId")
+    Integer countByQuizSessionId(@Param("sessionId") Long sessionId);
 }

@@ -88,4 +88,11 @@ public class QuizQuestionService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.QUIZ_QUESTION_NOT_FOUND));
         quizQuestion.markAsSolved();
     }
+    
+    /**
+     * 특정 세션의 문제 수를 카운트합니다.
+     */
+    public Integer countQuestionsBySessionId(Long sessionId) {
+        return quizQuestionJpaRepository.countByQuizSessionId(sessionId);
+    }
 }

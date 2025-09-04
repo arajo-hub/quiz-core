@@ -58,8 +58,21 @@ public class QuizService {
         // 현재 문제를 해결된 상태로 표시
         quizQuestionService.markQuizQuestionAsSolved(request.getQuestionId());
         
-        // 다음 문제 생성
-        QuizQuestionEntityDto nextQuestion = quizQuestionService.createQuizQuestion(userId, quizQuestionDto.quizSessionId());
+        // 다음 문제 생성 여부 확인
+        QuizQuestionEntityDto nextQuestion = null;
+        boolean isSessionCompleted = false;
+        
+        // 현재 세션의 문제 수 확인
+        Integer currentQuestionCount = quizQuestionService.countQuestionsBySessionId(quizQuestionDto.quizSessionId());
+        
+        if (currentQuestionCount < 3) {
+            // 3문제 미만이면 다음 문제 생성
+            nextQuestion = quizQuestionService.createQuizQuestion(userId, quizQuestionDto.quizSessionId());
+        } else {
+            // 3문제가 되면 세션 완료
+            isSessionCompleted = true;
+            quizSessionService.completeQuizSession(quizQuestionDto.quizSessionId());
+        }
         
         // 채점 결과 생성
         QuizAnswerResponse.GradingResult gradingResult = new QuizAnswerResponse.GradingResult(
@@ -67,7 +80,7 @@ public class QuizService {
             isCorrect
         );
         
-        QuizAnswerResponse response = new QuizAnswerResponse(gradingResult, nextQuestion);
+        QuizAnswerResponse response = new QuizAnswerResponse(gradingResult, nextQuestion, isSessionCompleted);
         
         // LearningLog 저장
         learningLogService.saveLearningLog(userId, quizQuestionDto, request, response);

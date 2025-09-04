@@ -105,4 +105,12 @@ public class QuizSession extends BaseEntity {
         quizSession.startedDateTime = LocalDateTime.now();
         return quizSession;
     }
+    
+    /**
+     * 퀴즈 세션을 완료 상태로 변경합니다.
+     */
+    public void complete() {
+        this.sessionStatus = SessionStatus.COMPLETED;
+        this.completedDateTime = LocalDateTime.now();
+    }
 }
