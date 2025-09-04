@@ -107,8 +107,18 @@ public class QuizQuestion extends BaseEntity {
      * 이 문제에 대한 사용자의 답변 기록입니다.
      * 일대일 관계로 연결됩니다.
      */
-    @OneToOne(mappedBy = "quizQuestion", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "quizQuestion", cascade = CascadeType.ALL)
     private LearningLog learningLog;
+
+    /**
+     * ID만으로 QuizQuestion 생성합니다.
+     * 주로 JPA 관계 매핑에서 사용됩니다.
+     *
+     * @param id 퀴즈 질문 ID
+     */
+    public QuizQuestion(Long id) {
+        this.id = id;
+    }
 
     /**
      * LearningSentenceEntityDto를 기반으로 빈칸 뚫기 문제를 생성합니다.

@@ -53,5 +53,27 @@ public class QuizQuestionService {
         Integer maxOrder = quizQuestionJpaRepository.findMaxQuestionOrderBySessionId(sessionId);
         return maxOrder != null ? maxOrder + 1 : 1;
     }
-
+    
+    /**
+     * ID로 퀴즈 문제를 조회합니다.
+     * 
+     * @param questionId 퀴즈 문제 ID
+     * @return 퀴즈 문제 DTO
+     */
+    public QuizQuestionEntityDto findQuizQuestionById(Long questionId) {
+        QuizQuestion quizQuestion = quizQuestionJpaRepository.findById(questionId)
+                .orElseThrow(() -> new RuntimeException("퀴즈 문제를 찾을 수 없습니다."));
+        return QuizQuestionEntityDto.from(quizQuestion);
+    }
+    
+    /**
+     * 채점을 위한 퀴즈 문제 정보를 조회합니다.
+     * 
+     * @param questionId 퀴즈 문제 ID
+     * @return 채점에 필요한 정보 (ID, correctAnswer, learningSentence)
+     */
+    public QuizQuestion findQuizQuestionForGrading(Long questionId) {
+        return quizQuestionJpaRepository.findById(questionId)
+                .orElseThrow(() -> new RuntimeException("퀴즈 문제를 찾을 수 없습니다."));
+    }
 }

@@ -30,10 +30,9 @@ public class LearningLog extends BaseEntity {
     /**
      * 사용자 식별자
      * 퀴즈 로그를 생성한 사용자를 구분합니다.
-     * 최대 100자까지 저장 가능합니다.
      */
-    @Column(length = 100)
-    private String userId;
+    @Column(nullable = false)
+    private Long userId;
     
     /**
      * 퀴즈 문제
@@ -59,4 +58,32 @@ public class LearningLog extends BaseEntity {
      */
     @Column(columnDefinition = "TEXT")
     private String userAnswer;
+    
+    /**
+     * 답변 소요 시간 (초)
+     * 사용자가 문제를 푸는데 걸린 시간을 기록합니다.
+     */
+    @Column
+    private Integer timeSpent;
+    
+    /**
+     * LearningLog를 생성하는 팩토리 메서드입니다.
+     * 
+     * @param userId 사용자 ID
+     * @param quizQuestionId 퀴즈 문제 ID
+     * @param isCorrect 정답 여부
+     * @param userAnswer 사용자 답변 (JSON 문자열)
+     * @param timeSpent 소요 시간
+     * @return 생성된 LearningLog
+     */
+    public static LearningLog of(Long userId, Long quizQuestionId, Boolean isCorrect, 
+                                String userAnswer, Integer timeSpent) {
+        LearningLog learningLog = new LearningLog();
+        learningLog.userId = userId;
+        learningLog.quizQuestion = new QuizQuestion(quizQuestionId);
+        learningLog.isCorrect = isCorrect;
+        learningLog.userAnswer = userAnswer;
+        learningLog.timeSpent = timeSpent;
+        return learningLog;
+    }
 }

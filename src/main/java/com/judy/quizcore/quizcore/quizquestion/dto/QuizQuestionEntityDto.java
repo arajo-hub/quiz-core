@@ -20,6 +20,7 @@ public record QuizQuestionEntityDto(
     Integer questionOrder,
     QuestionType questionType,
     Object question,
+    Object correctAnswer,
     Object options
 ) {
     
@@ -32,6 +33,7 @@ public record QuizQuestionEntityDto(
         ObjectMapper objectMapper = new ObjectMapper();
         
         Object questionObject = null;
+        Object correctAnswerObject = null;
         Object optionsObject = null;
         
         try {
@@ -39,12 +41,16 @@ public record QuizQuestionEntityDto(
             if (quizQuestion.getQuestion() != null) {
                 questionObject = objectMapper.readValue(quizQuestion.getQuestion(), Object.class);
             }
+            if (quizQuestion.getCorrectAnswer() != null) {
+                correctAnswerObject = objectMapper.readValue(quizQuestion.getCorrectAnswer(), Object.class);
+            }
             if (quizQuestion.getOptions() != null) {
                 optionsObject = objectMapper.readValue(quizQuestion.getOptions(), Object.class);
             }
         } catch (JsonProcessingException e) {
             // 파싱 실패 시 원본 문자열 사용
             questionObject = quizQuestion.getQuestion();
+            correctAnswerObject = quizQuestion.getCorrectAnswer();
             optionsObject = quizQuestion.getOptions();
         }
         
@@ -57,6 +63,7 @@ public record QuizQuestionEntityDto(
                 quizQuestion.getQuestionOrder(),
                 quizQuestion.getQuestionType(),
                 questionObject,
+                correctAnswerObject,
                 optionsObject
         );
     }
