@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface QuizQuestionJpaRepository extends JpaRepository<QuizQuestion, Long> {
     
@@ -26,4 +28,13 @@ public interface QuizQuestionJpaRepository extends JpaRepository<QuizQuestion, L
      */
     @Query("SELECT COUNT(q) FROM QuizQuestion q WHERE q.quizSession.id = :sessionId")
     Integer countByQuizSessionId(@Param("sessionId") Long sessionId);
+    
+    /**
+     * 특정 세션의 모든 문제를 문제 순서대로 조회합니다.
+     * 
+     * @param sessionId 퀴즈 세션 ID
+     * @return 문제 순서대로 정렬된 문제 목록
+     */
+    @Query("SELECT q FROM QuizQuestion q WHERE q.quizSession.id = :sessionId ORDER BY q.questionOrder")
+    List<QuizQuestion> findByQuizSessionIdOrderByQuestionOrder(@Param("sessionId") Long sessionId);
 }

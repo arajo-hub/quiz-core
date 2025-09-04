@@ -39,4 +39,21 @@ public class QuizSessionService {
         quizSession.complete();
         quizSessionJpaRepository.save(quizSession);
     }
+    
+    /**
+     * ID로 퀴즈 세션을 조회합니다.
+     */
+    public QuizSessionEntityDto findSessionById(Long sessionId) {
+        QuizSession quizSession = quizSessionJpaRepository.findById(sessionId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.QUIZ_SESSION_NOT_FOUND));
+        return new QuizSessionEntityDto(
+                quizSession.getId(),
+                quizSession.getSessionName(),
+                quizSession.getUserId(),
+                quizSession.getSessionStatus(),
+                quizSession.getCorrectAnswers(),
+                quizSession.getStartedDateTime(),
+                quizSession.getCompletedDateTime()
+        );
+    }
 }

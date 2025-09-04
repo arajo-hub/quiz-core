@@ -51,4 +51,21 @@ public class LearningLogService {
             throw new BusinessException(ErrorCode.UNPROCESSABLE_ENTITY);
         }
     }
+    
+    /**
+     * 퀴즈 문제 ID로 학습 로그를 조회합니다.
+     */
+    public LearningLog findByQuizQuestionId(Long quizQuestionId) {
+        return learningLogJpaRepository.findByQuizQuestionId(quizQuestionId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.LEARNING_PROGRESS_NOT_FOUND));
+    }
+    
+    /**
+     * 퀴즈 문제 ID로 정답 여부를 조회합니다.
+     */
+    public Boolean getCorrectnessByQuizQuestionId(Long quizQuestionId) {
+        return learningLogJpaRepository.findByQuizQuestionId(quizQuestionId)
+                .map(LearningLog::getIsCorrect)
+                .orElse(false);
+    }
 }

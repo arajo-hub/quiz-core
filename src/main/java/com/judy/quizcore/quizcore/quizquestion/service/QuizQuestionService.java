@@ -11,6 +11,9 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Transactional
 @Service
 @RequiredArgsConstructor
@@ -94,5 +97,15 @@ public class QuizQuestionService {
      */
     public Integer countQuestionsBySessionId(Long sessionId) {
         return quizQuestionJpaRepository.countByQuizSessionId(sessionId);
+    }
+    
+    /**
+     * 특정 세션의 모든 문제를 조회합니다.
+     */
+    public List<QuizQuestionEntityDto> findQuestionsBySessionId(Long sessionId) {
+        List<QuizQuestion> questions = quizQuestionJpaRepository.findByQuizSessionIdOrderByQuestionOrder(sessionId);
+        return questions.stream()
+                .map(QuizQuestionEntityDto::from)
+                .collect(Collectors.toList());
     }
 }

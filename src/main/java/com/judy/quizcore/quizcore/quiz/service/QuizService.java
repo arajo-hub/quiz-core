@@ -8,6 +8,7 @@ import com.judy.quizcore.quizcore.learninglog.service.LearningLogService;
 import com.judy.quizcore.quizcore.quiz.dto.QuizAnswerRequest;
 import com.judy.quizcore.quizcore.quiz.response.QuizAnswerResponse;
 import com.judy.quizcore.quizcore.quiz.response.QuizSessionStartResponse;
+import com.judy.quizcore.quizcore.quiz.response.QuizSessionResultResponse;
 import com.judy.quizcore.quizcore.quizquestion.dto.QuizQuestionEntityDto;
 import com.judy.quizcore.quizcore.quizquestion.service.QuizQuestionService;
 import com.judy.quizcore.quizcore.quizsession.dto.QuizSessionEntityDto;
@@ -134,5 +135,54 @@ public class QuizService {
         } catch (Exception e) {
             throw new BusinessException(ErrorCode.UNPROCESSABLE_ENTITY);
         }
+    }
+    
+    /**
+     * 퀴즈 세션의 결과를 조회합니다.
+     * 
+     * @param sessionId 세션 ID
+     * @param userId 사용자 ID
+     * @return 세션 결과 요약
+     */
+    public ApiResponse<QuizSessionResultResponse> getSessionResult(Long sessionId, Long userId) {
+        // 1. 세션 정보 조회
+        QuizSessionEntityDto session = quizSessionService.findSessionById(sessionId);
+        
+        // 2. 세션의 모든 문제 조회
+        List<QuizQuestionEntityDto> questions = quizQuestionService.findQuestionsBySessionId(sessionId);
+        
+        // 3. 결과 집계
+        int correctCount = 0;
+        int wrongCount = 0;
+        
+        for (QuizQuestionEntityDto question : questions) {
+            if (question.isSolved()) {
+                // LearningLogService를 통해 정답 여부 확인
+                Boolean isCorrect = learningLogService.getCorrectnessByQuizQuestionId(question.id());
+                if (isCorrect) {
+                    correctCount++;
+                } else {
+                    wrongCount++;
+                }
+            }
+        }
+        
+        // 4. 룰렛 사용 여부 확인 (임시로 false)
+        Boolean hasUsedRoulette = false;
+        
+        // 5. 응답 생성
+        QuizSessionResultResponse result = new QuizSessionResultResponse(
+            sessionId,
+            session.sessionName(),
+            3, // 총 문제 수
+            correctCount,
+            wrongCount,
+            questions.size() > 0 ? (double) correctCount / questions.size() : 0.0,
+            hasUsedRoulette,
+            session.startedDateTime(),
+            session.completedDateTime()
+        );
+        
+        return ApiResponse.success(result);
     }
 }
